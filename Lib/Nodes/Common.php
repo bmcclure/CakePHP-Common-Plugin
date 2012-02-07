@@ -125,17 +125,25 @@ class Common {
 	}
 
 	/**
-	 * Replace some global constants with a shorter prefix
-	 *
-	 * Useful to avoid revealing system paths to the frontend
-	 *
-	 * @param string $str The path to process
-	 * @return string
-	 */
-	public static function replaceMacros($str) {
+	* Remove app absolute paths and strip them down to constant strings
+	*
+	* Its used to avoid information leak about the platform and hosting envoriment
+	*
+	* The following constants will be replaced with stringified version
+	* - WEBROOT_DIR
+	* - APP
+	* - ROOT
+	* - CAKE
+	*
+	* @platform
+	* @param string $str
+	* @return string
+	*/
+	public static function stripRealPaths($str) {
 		$str = str_replace(realpath(WEBROOT_DIR), 'WEBROOT_DIR', $str);
 		$str = str_replace(realpath(APP), 'APP', $str);
 		$str = str_replace(realpath(ROOT), 'ROOT', $str);
+		$str = str_replace(realpath(CAKE), 'CAKE', $str);
 
 		return $str;
 	}
