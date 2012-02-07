@@ -16,6 +16,8 @@ class SymlinkAssetsShell extends AppShell {
 	* @return void
 	*/
 	public function create() {
+		chdir(WWW_ROOT);
+
 		$paths = $this->getPaths();
 		foreach ($paths as $plugin => $config) {
 			$this->out('<info>Processing</info> ' . $plugin);
@@ -24,7 +26,7 @@ class SymlinkAssetsShell extends AppShell {
 				if (is_link($config['public'])) {
 					$symlinkTarget = readlink($config['public']);
 					$this->out('----> Current target is ' . $symlinkTarget);
-					if ($config['private'] === $symlinkTarget) {
+					if ($config['relative_private'] === $symlinkTarget) {
 						$this->out('------> <info>Skipping</info>, Already configured correctly');
 						continue;
 					}
@@ -36,7 +38,7 @@ class SymlinkAssetsShell extends AppShell {
 				}
 			}
 
-			if (symlink($config['private'], $config['public'])) {
+			if (symlink($config['relative_private'], $config['relative_public'])) {
 				$this->out('--> OK');
 			} else {
 				$this->out('--> Error');
@@ -50,6 +52,8 @@ class SymlinkAssetsShell extends AppShell {
 	* @return void
 	*/
 	public function remove() {
+		chdir(WWW_ROOT);
+
 		$paths = $this->getPaths();
 		foreach ($paths as $plugin => $config) {
 			$this->out('<info>Processing</info> ' . $plugin);
@@ -91,6 +95,25 @@ class SymlinkAssetsShell extends AppShell {
 	}
 
 	/**
+	* Get the relative path between two directories
+	*
+	* @param string $from
+	* @param string $to
+	* @return string
+	*/
+	protected function relativePath($from, $to) {
+		$arFrom	= explode(DS, rtrim($from, DS));
+		$arTo	= explode(DS, rtrim($to, DS));
+
+		while (count($arFrom) && count($arTo) && ($arFrom[0] == $arTo[0])) {
+			array_shift($arFrom);
+			array_shift($arTo);
+		}
+
+		return str_pad("", (count($arFrom)-1) * 3, '..' . DS) . implode(DS, $arTo);
+	}
+
+	/**
 	* Build a list of valid plugin webroots
 	*
 	* @return array
@@ -104,11 +127,13 @@ class SymlinkAssetsShell extends AppShell {
 			}
 
 			$items[$plugin] = array(
-				'public' => WWW_ROOT . $this->convertPlugin($plugin),
-				'private' => $pluginWebrootPath
+				'public'	=> WWW_ROOT . $this->convertPlugin($plugin),
+				'private'	=> $pluginWebrootPath
 			);
-		}
 
+			$items[$plugin]['relative_private']	= $this->relativePath($items[$plugin]['public'], $items[$plugin]['private']);
+			$items[$plugin]['relative_public']	= $this->convertPlugin($plugin);
+		}
 		return $items;
 	}
 }
