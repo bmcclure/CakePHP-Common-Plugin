@@ -69,7 +69,7 @@ class SymlinkAssetsShell extends AppShell {
 
 			$symlinkTarget = readlink($config['public']);
 			$this->out('----> Current target is ' . $symlinkTarget);
-			if ($config['private'] !== $symlinkTarget) {
+			if ($config['relative_private'] !== $symlinkTarget) {
 				$this->out('--> <error>Skipping, symlink source does not match ours</error>');
 				continue;
 			}
