@@ -1,4 +1,6 @@
 <?php
+namespace Nodes;
+
 /**
 * cURL class helper
 *
@@ -9,7 +11,7 @@
 * @package Core.Lib
 * @copyright Nodes ApS 2010-2012 <tech@nodes.dk>
 */
-class cURL {
+class Curl {
 	/**
 	* The cURL resource created by curl_init
 	*
@@ -129,7 +131,7 @@ class cURL {
 
 		$this->responseBody = curl_exec($this->curlResource);
 		if ($this->hasError()) {
-			throw new CurlException($this->getError());
+			throw new Curl\Exception($this->getError());
 		}
 
 		return $this;
@@ -266,8 +268,4 @@ class cURL {
 		$instance = new $this(null, $this->curlOptions);
 		return $instance;
 	}
-}
-
-class CurlException extends Exception {
-
 }
