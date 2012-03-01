@@ -254,7 +254,7 @@ class Curl {
 	*
 	* @param string|array	$key
 	* @param string			$value
-	* @return void
+	* @return \Nodes\Curl
 	*/
 	public function setOption($key, $value = null) {
 		if (is_array($key)) {
@@ -262,6 +262,7 @@ class Curl {
 			return;
 		}
 		$this->curlOptions[$key] = $value;
+		return $this;
 	}
 
 	public function __clone() {
