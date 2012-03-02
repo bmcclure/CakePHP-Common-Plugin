@@ -1,6 +1,6 @@
 <?php
 namespace Nodes\Curl;
 
-class Exception extends Nodes\Exception {
+class Exception extends \Nodes\Exception {
 
 }

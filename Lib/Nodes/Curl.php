@@ -223,6 +223,8 @@ class Curl {
 		switch($type) {
 			case 'text/json':
 			case 'text/javascript':
+			case 'application/json':
+			case 'json':
 				return json_decode($this->responseBody, true);
 			default:
 				return $this->responseBody;
