@@ -86,7 +86,7 @@ class SymlinkAssetsShell extends AppShell {
 			}
 
 			if (unlink($config['public'])) {
-				$this->out('--> <ok>OK</ok>');
+				$this->out(sprintf('--> <info>OK</info>, symlink removed (%s => %s)', \Nodes\Common::stripRealPaths($config['private']), \Nodes\Common::stripRealPaths($config['public'])));
 			} else {
 				$this->out('--> <error>Error</error>');
 			}
