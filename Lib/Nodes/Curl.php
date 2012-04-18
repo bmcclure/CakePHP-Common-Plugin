@@ -126,15 +126,28 @@ class Curl {
 	public function exec($options = array()) {
 		$options = $this->curlOptions + $options + array(CURLOPT_HEADERFUNCTION => array($this, 'curlHeaderCallback'));
 
+		// Make sure to cleanup previous used curlResource
+		$this->cleanup();
+
 		$this->curlResource = curl_init();
 		curl_setopt_array($this->curlResource, $options);
-
 		$this->responseBody = curl_exec($this->curlResource);
+
 		if ($this->hasError()) {
 			throw new Curl\Exception($this->getError());
 		}
 
 		return $this;
+	}
+
+	public function cleanup() {
+		if (empty($this->curlResource)) {
+			return;
+		}
+
+		curl_close($this->curlResource);
+		$this->curlResource = null;
+		unset($this->curlResource);
 	}
 
 	/**
