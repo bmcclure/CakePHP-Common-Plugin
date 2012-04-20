@@ -27,7 +27,7 @@ class Curl {
 	protected $defaultCurlOptions = array(
 		CURLOPT_RETURNTRANSFER	=> true, // Always return the HTTP body
 		CURLOPT_CONNECTTIMEOUT	=> 2,	 // If we can't connect for 2 seconds, abort
-		CURLOPT_TIMEOUT			=> 5	 // Our request should be able to complete within 5 seconds
+		CURLOPT_TIMEOUT			=> 10	 // Our request should be able to complete within 10 seconds
 	);
 
 	/**
@@ -231,8 +231,12 @@ class Curl {
 		}
 
 		$type = $this->getResponseType();
+
 		// Handle responses like: text/javascript; charset=UTF-8
-		list($type, $encoding) = split(';', $type);
+		if (false !== strpos($type, ';')) {
+			list($type, $encoding) = split(';', $type);
+		}
+
 		switch($type) {
 			case 'text/json':
 			case 'text/javascript':
