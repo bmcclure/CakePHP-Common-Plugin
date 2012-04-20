@@ -161,8 +161,8 @@ class Curl {
 		if (false !== strstr($header, ':')) {
 			list($key, $value) = explode(':', $header);
 
-			$this->responseHeadersArray[strtolower($key)] = $value;
-			$this->responseHeadersArrayRaw[$key] = $value;
+			$this->responseHeadersArray[strtolower($key)] = trim($value);
+			$this->responseHeadersArrayRaw[$key] = trim($value);
 		}
 
 		return strlen($header);
@@ -197,8 +197,8 @@ class Curl {
 		$headers = $this->getResponseHeaders($raw);
 
 		$value = null;
-		if (array_key_exists($key, $this->responseHeadersArrayRaw)) {
-			$value = $this->responseHeadersArrayRaw[$key];
+		if (array_key_exists($key, $headers)) {
+			$value = $headers[$key];
 		}
 
 		return $value;
