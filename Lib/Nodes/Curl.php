@@ -27,7 +27,9 @@ class Curl {
 	protected $defaultCurlOptions = array(
 		CURLOPT_RETURNTRANSFER	=> true, // Always return the HTTP body
 		CURLOPT_CONNECTTIMEOUT	=> 2,	 // If we can't connect for 2 seconds, abort
-		CURLOPT_TIMEOUT			=> 10	 // Our request should be able to complete within 10 seconds
+		CURLOPT_TIMEOUT			=> 10,	 // Our request should be able to complete within 10 seconds
+		CURLOPT_FOLLOWLOCATION	=> true, // TRUE to follow any "Location: " header that the server sends as part of the HTTP header
+		CURLOPT_MAXREDIRS		=> 10,	 // The maximum amount of HTTP redirections to follow.
 	);
 
 	/**
