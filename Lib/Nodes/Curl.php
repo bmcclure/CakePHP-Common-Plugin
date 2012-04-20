@@ -231,6 +231,7 @@ class Curl {
 		}
 
 		$type = $this->getResponseType();
+
 		// Handle responses like: text/javascript; charset=UTF-8
 		if (false !== strpos($type, ';')) {
 			list($type, $encoding) = split(';', $type);
