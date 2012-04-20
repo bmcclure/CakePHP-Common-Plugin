@@ -10,6 +10,14 @@
 */
 class SymlinkAssetsShell extends AppShell {
 
+	public function main() {
+		$this->out($this->OptionParser->help());
+	}
+
+	public function _welcome() {
+
+	}
+
 	/**
 	* Create symlinks from each plugin to app/webroot
 	*
@@ -20,28 +28,31 @@ class SymlinkAssetsShell extends AppShell {
 
 		$paths = $this->getPaths();
 		foreach ($paths as $plugin => $config) {
-			$this->out('<info>Processing</info> ' . $plugin);
+			$this->out('Processing plugin: <info>' . $plugin . '</info>');
 			if (file_exists($config['public'])) {
-				$this->out('--> <warning>Already exists</warning>');
+				$this->out(sprintf('--> <warning>Path "%s" already exists</warning>', \Nodes\Common::stripRealPaths($config['public'])));
 				if (is_link($config['public'])) {
 					$symlinkTarget = readlink($config['public']);
-					$this->out('----> Current target is ' . $symlinkTarget);
+					$this->out('----> Path is already symlink. (' . $symlinkTarget . ')');
 					if ($config['relative_private'] === $symlinkTarget) {
-						$this->out('------> <info>Skipping</info>, Already configured correctly');
+						$this->out('----> <info>Skipping</info>, Already configured correctly');
 						continue;
 					}
 					$this->out('--> <error>Target is already symlink, but does not have same source</error>');
 					continue;
 				} elseif (is_file($config['public'])) {
-					$this->out('----> <error>Skipping, target is a file</error>');
+					$this->out('----> Skipping, target is a file');
+					continue;
+				} else {
+					$this->out('----> <error>Skipping, don\'t know how to process file</error>');
 					continue;
 				}
 			}
 
 			if (symlink($config['relative_private'], $config['relative_public'])) {
-				$this->out('--> OK');
+				$this->out(sprintf('--> <info>OK</info>, symlink created (%s => %s)', \Nodes\Common::stripRealPaths($config['private']), \Nodes\Common::stripRealPaths($config['public'])));
 			} else {
-				$this->out('--> Error');
+				$this->out('--> <error>Error</error> Could not create symlink');
 			}
 		}
 	}
@@ -56,9 +67,9 @@ class SymlinkAssetsShell extends AppShell {
 
 		$paths = $this->getPaths();
 		foreach ($paths as $plugin => $config) {
-			$this->out('<info>Processing</info> ' . $plugin);
+			$this->out('Processing plugin: <info>' . $plugin . '</info>');
 			if (!file_exists($config['public'])) {
-				$this->out('--> <info>Skipping</info>, does not exists');
+				$this->out('--> <error>Skipping</error>, symlink does not exists ('  . \Nodes\Common::stripRealPaths($config['public']) . ')');
 				continue;
 			}
 
@@ -75,11 +86,21 @@ class SymlinkAssetsShell extends AppShell {
 			}
 
 			if (unlink($config['public'])) {
-				$this->out('--> OK');
+				$this->out(sprintf('--> <info>OK</info>, symlink removed (%s => %s)', \Nodes\Common::stripRealPaths($config['private']), \Nodes\Common::stripRealPaths($config['public'])));
 			} else {
-				$this->out('--> Error');
+				$this->out('--> <error>Error</error>');
 			}
 		}
+	}
+
+	public function getOptionParser() {
+		$parser = parent::getOptionParser();
+		$parser
+			->addSubcommand('create', array('help' => 'Create symlinks for all plugin assets.'))
+			->addSubcommand('remove', array('help' => 'Remove all plugin asset symlinks.'))
+			->description('Manage plugin asset symlinks so they can be served directly by apache.');
+		//configure parser
+		return $parser;
 	}
 
 	/**

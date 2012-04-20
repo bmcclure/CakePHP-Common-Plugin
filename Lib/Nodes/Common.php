@@ -130,20 +130,23 @@ class Common {
 	* Its used to avoid information leak about the platform and hosting envoriment
 	*
 	* The following constants will be replaced with stringified version
-	* - WEBROOT_DIR
+	* - WWW_ROOT
+	* - CAKE
 	* - APP
 	* - ROOT
-	* - CAKE
+	* - WEBROOT_DIR
 	*
 	* @platform
 	* @param string $str
+	* @param
 	* @return string
 	*/
 	public static function stripRealPaths($str) {
-		$str = str_replace(realpath(WEBROOT_DIR), 'WEBROOT_DIR', $str);
-		$str = str_replace(realpath(APP), 'APP', $str);
-		$str = str_replace(realpath(ROOT), 'ROOT', $str);
-		$str = str_replace(realpath(CAKE), 'CAKE', $str);
+		$str = str_replace(WWW_ROOT, 'WWW_ROOT/', $str);
+		$str = str_replace(CAKE, 'CAKE/', $str);
+		$str = str_replace(APP, 'APP/', $str);
+		$str = str_replace(ROOT, 'ROOT/', $str);
+		$str = str_replace(realpath(WEBROOT_DIR), 'WEBROOT_DIR/', $str);
 
 		return $str;
 	}
