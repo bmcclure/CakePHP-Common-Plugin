@@ -10,12 +10,11 @@ class SslProxyController extends CommonAppController {
 			throw new NotFoundException('Missing link parameter');
 		}
 
-		$link = $this->request->query['link'];
+		$link = rawurldecode($this->request->query['link']);
 
 		if (!Validation::url($link)) {
 			throw new NotFoundException('Invalid link');
 		}
-
 
 		$request = new Nodes\Curl($link);
 		$request->exec();
