@@ -27,7 +27,9 @@ class Curl {
 	protected $defaultCurlOptions = array(
 		CURLOPT_RETURNTRANSFER	=> true, // Always return the HTTP body
 		CURLOPT_CONNECTTIMEOUT	=> 2,	 // If we can't connect for 2 seconds, abort
-		CURLOPT_TIMEOUT			=> 5	 // Our request should be able to complete within 5 seconds
+		CURLOPT_TIMEOUT			=> 10,	 // Our request should be able to complete within 10 seconds
+		CURLOPT_FOLLOWLOCATION	=> true, // TRUE to follow any "Location: " header that the server sends as part of the HTTP header
+		CURLOPT_MAXREDIRS		=> 10,	 // The maximum amount of HTTP redirections to follow.
 	);
 
 	/**
@@ -161,8 +163,8 @@ class Curl {
 		if (false !== strstr($header, ':')) {
 			list($key, $value) = explode(':', $header);
 
-			$this->responseHeadersArray[strtolower($key)] = $value;
-			$this->responseHeadersArrayRaw[$key] = $value;
+			$this->responseHeadersArray[strtolower($key)] = trim($value);
+			$this->responseHeadersArrayRaw[$key] = trim($value);
 		}
 
 		return strlen($header);
@@ -197,8 +199,8 @@ class Curl {
 		$headers = $this->getResponseHeaders($raw);
 
 		$value = null;
-		if (array_key_exists($key, $this->responseHeadersArrayRaw)) {
-			$value = $this->responseHeadersArrayRaw[$key];
+		if (array_key_exists($key, $headers)) {
+			$value = $headers[$key];
 		}
 
 		return $value;
@@ -231,8 +233,12 @@ class Curl {
 		}
 
 		$type = $this->getResponseType();
+
 		// Handle responses like: text/javascript; charset=UTF-8
-		list($type, $encoding) = split(';', $type);
+		if (false !== strpos($type, ';')) {
+			list($type, $encoding) = split(';', $type);
+		}
+
 		switch($type) {
 			case 'text/json':
 			case 'text/javascript':
