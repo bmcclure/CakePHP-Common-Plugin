@@ -12,13 +12,6 @@ namespace Nodes;
  */
 class Common {
 
-	/**
-	 * Constant with regular expression for validating UUID fields
-	 *
-	 * @var string
-	 */
-	const VALID_UUID = '[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}';
-
 	public static function autoLinkText($text, $options = array()) {
 		static $Html;
 
@@ -53,6 +46,7 @@ class Common {
 	/**
 	 * Verify if a string is a valid UUID string
 	 *
+	 * TODO Use Validation::uuuid
 	 * @param string $str The string to validate
 	 * @param boolean $nullIsValid If $str is null, should it be considered valid?
 	 * @return boolean
@@ -68,8 +62,7 @@ class Common {
 			return false;
 		}
 
-		// Check if the string matches
-		return 1 === preg_match(sprintf('#^%s$#sim', self::VALID_UUID), $str);
+		return preg_match('/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i', $str);
 	}
 
 	/**
