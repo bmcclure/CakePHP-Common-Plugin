@@ -29,6 +29,6 @@ class SslProxyController extends CommonAppController {
 		$this->response->type($request->getResponseHeader('content-type'));
 		$this->response->body($request->getResponseBody());
 		$this->response->send();
-		die;
+		$this->_end();
 	}
 }
