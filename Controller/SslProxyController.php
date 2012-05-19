@@ -24,7 +24,6 @@ class SslProxyController extends CommonAppController {
 			throw new NotFoundException('Response code was not 200 OK');
 		}
 
-		$responseHeaders = $request->getResponseHeaders();
 		$this->response->disableCache();
 		$this->response->type($request->getResponseHeader('content-type'));
 		$this->response->body($request->getResponseBody());
