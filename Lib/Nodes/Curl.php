@@ -25,7 +25,7 @@ class Curl {
  *
  * @var array
  */
-	protected $_default_curlOptions = array(
+	protected $_defaultCurlOptions = array(
 		CURLOPT_RETURNTRANSFER	=> true, // Always return the HTTP body
 		CURLOPT_CONNECTTIMEOUT	=> 2,	 // If we can't connect for 2 seconds, abort
 		CURLOPT_TIMEOUT			=> 10,	 // Our request should be able to complete within 10 seconds
@@ -76,7 +76,7 @@ class Curl {
  */
 	public function __construct($url = null, $options = array()) {
 		// Merge all options
-		$this->_curlOptions = $this->_default_curlOptions + $options + array(CURLOPT_URL => $url);
+		$this->_curlOptions = $this->_defaultCurlOptions + $options + array(CURLOPT_URL => $url);
 	}
 
 /**
@@ -138,7 +138,7 @@ class Curl {
 		$this->_responseBody = curl_exec($this->_curlResource);
 
 		if ($this->hasError()) {
-			throw new Curl\Exception($this->getError());
+			throw new \Curl\Exception($this->getError());
 		}
 
 		return $this;
@@ -229,7 +229,7 @@ class Curl {
  * @param boolean $raw	Return the RAW response body
  * @return mixed
  */
-	public function get_responseBody($raw = false) {
+	public function getResponseBody($raw = false) {
 		if ($raw) {
 			return $this->_responseBody;
 		}

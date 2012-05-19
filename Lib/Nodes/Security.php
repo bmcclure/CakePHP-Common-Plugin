@@ -18,8 +18,8 @@ class Security {
 
 		$iv = mcrypt_create_iv(mcrypt_get_iv_size($cipher, $mode), MCRYPT_DEV_URANDOM);
 		$data = array(
-			'payload' => static::_base64_url_encode(mcrypt_encrypt($cipher, $secret, json_encode($data), $mode, $iv)),
-			'iv'	  => static::_base64_url_encode($iv)
+			'payload' => static::_base64UrlEncode(mcrypt_encrypt($cipher, $secret, json_encode($data), $mode, $iv)),
+			'iv'	  => static::_base64UrlEncode($iv)
 		);
 
 		// always present, and always at the top level
@@ -27,13 +27,13 @@ class Security {
 		$data['issued_at'] = time();
 
 		// sign it
-		$payload	= static::_base64_url_encode(json_encode($data));
-		$sig		= static::_base64_url_encode(hash_hmac('sha256', $payload, $secret, $raw=true));
+		$payload	= static::_base64UrlEncode(json_encode($data));
+		$sig		= static::_base64UrlEncode(hash_hmac('sha256', $payload, $secret, $raw=true));
 
 		return $sig . '.' . $payload;
 	}
 
-	protected static function _base64_url_encode($input) {
+	protected static function _base64UrlEncode($input) {
 		$str = strtr(base64_encode($input), '+/=', '-_.');
 		$str = str_replace('.', '', $str); // remove padding
 		return $str;
@@ -41,7 +41,7 @@ class Security {
 
 	public static function decrypt($secret, $input, $maxAge = 3600) {
 		list($encodedSig, $encodedEnvelope) = explode('.', $input, 2);
-		$envelope	= json_decode(static::_base64_url_decode($encodedEnvelope), true);
+		$envelope	= json_decode(static::_base64UrlDecode($encodedEnvelope), true);
 		$algorithm	= $envelope['algorithm'];
 
 		if ($algorithm != 'AES-256-CBC HMAC-SHA256' && $algorithm != 'HMAC-SHA256') {
@@ -52,15 +52,15 @@ class Security {
 			throw new Exception('Invalid request. (Too old.)');
 		}
 
-		if (static::_base64_url_decode($encodedSig) != hash_hmac('sha256', $encodedEnvelope, $secret, $raw = true)) {
+		if (static::_base64UrlDecode($encodedSig) != hash_hmac('sha256', $encodedEnvelope, $secret, $raw = true)) {
 			throw new Exception('Invalid request. (Invalid signature.)');
 		}
 
 		// otherwise, decrypt the payload
-		return json_decode(trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $secret, static::_base64_url_decode($envelope['payload']), MCRYPT_MODE_CBC, static::_base64_url_decode($envelope['iv']))), true);
+		return json_decode(trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $secret, static::_base64UrlDecode($envelope['payload']), MCRYPT_MODE_CBC, static::_base64UrlDecode($envelope['iv']))), true);
 	}
 
-	protected static function _base64_url_decode($input) {
+	protected static function _base64UrlDecode($input) {
 		return base64_decode(strtr($input, '-_', '+/'));
 	}
 }

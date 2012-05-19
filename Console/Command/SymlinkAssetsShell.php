@@ -18,11 +18,11 @@ class SymlinkAssetsShell extends AppShell {
 		// Empty
 	}
 
-	/**
-	 * Create symlinks from each plugin to app/webroot
-	 *
-	 * @return void
-	 */
+/**
+ * Create symlinks from each plugin to app/webroot
+ *
+ * @return void
+ */
 	public function create() {
 		chdir(WWW_ROOT);
 
@@ -57,11 +57,11 @@ class SymlinkAssetsShell extends AppShell {
 		}
 	}
 
-	/**
-	 * Remove symlinks from each plugin to app/webroot
-	 *
-	 * @return void
-	 */
+/**
+ * Remove symlinks from each plugin to app/webroot
+ *
+ * @return void
+ */
 	public function remove() {
 		chdir(WWW_ROOT);
 
@@ -103,25 +103,25 @@ class SymlinkAssetsShell extends AppShell {
 		return $parser;
 	}
 
-	/**
-	 * Convert the plugin name to what ever format you use
-	 *
-	 * By default it converts PluginName to plugin_name
-	 *
-	 * @param string $plugin
-	 * @return string
-	 */
+/**
+ * Convert the plugin name to what ever format you use
+ *
+ * By default it converts PluginName to plugin_name
+ *
+ * @param string $plugin
+ * @return string
+ */
 	protected function _convertPlugin($plugin) {
 		return Inflector::underscore($plugin);
 	}
 
-	/**
-	 * Get the relative path between two directories
-	 *
-	 * @param string $from
-	 * @param string $to
-	 * @return string
-	 */
+/**
+ * Get the relative path between two directories
+ *
+ * @param string $from
+ * @param string $to
+ * @return string
+ */
 	protected function _relativePath($from, $to) {
 		$arFrom	= explode(DS, rtrim($from, DS));
 		$arTo	= explode(DS, rtrim($to, DS));
@@ -135,11 +135,11 @@ class SymlinkAssetsShell extends AppShell {
 		return str_pad("", (count($arFrom) - 1) * 3, '..' . DS) . implode(DS, $arTo);
 	}
 
-	/**
-	 * Build a list of valid plugin webroots
-	 *
-	 * @return array
-	 */
+/**
+ * Build a list of valid plugin webroots
+ *
+ * @return array
+ */
 	protected function _getPaths() {
 		$items = array();
 		foreach (CakePlugin::loaded() as $plugin) {
