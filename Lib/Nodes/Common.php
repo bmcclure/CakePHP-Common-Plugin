@@ -43,14 +43,14 @@ class Common {
 		return $text;
 	}
 
-	/**
-	 * Verify if a string is a valid UUID string
-	 *
-	 * TODO Use Validation::uuuid
-	 * @param string $str The string to validate
-	 * @param boolean $nullIsValid If $str is null, should it be considered valid?
-	 * @return boolean
-	 */
+/**
+ * Verify if a string is a valid UUID string
+ *
+ * TODO Use Validation::uuuid
+ * @param string $str The string to validate
+ * @param boolean $nullIsValid If $str is null, should it be considered valid?
+ * @return boolean
+ */
 	public static function validUUID($str, $nullIsValid = false) {
 		// Check if we got a NULL case
 		if ($nullIsValid && empty($str)) {
@@ -65,15 +65,15 @@ class Common {
 		return preg_match('/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i', $str);
 	}
 
-	/**
-	 * Try to extract a key from CakePHPs param array
-	 *
-	 * A named key can be in two places, in root of $params or inside $params['named']
-	 *
-	 * @param array $params The CakePHP params array
-	 * @param string $key The key to look for
-	 * @return mixed
-	 */
+/**
+ * Try to extract a key from CakePHPs param array
+ *
+ * A named key can be in two places, in root of $params or inside $params['named']
+ *
+ * @param array $params The CakePHP params array
+ * @param string $key The key to look for
+ * @return mixed
+ */
 	public static function extractNamedParam($params, $key) {
 		if (isset($params['named'][$key])) {
 			return $params['named'][$key];
@@ -86,16 +86,16 @@ class Common {
 		return null;
 	}
 
-	/**
-	 * Used primary for the admin menu, to see if Controller ($object) and Action ($property)
-	 * is present in a comma-separated list - with support for wildcards
-	 *
-	 * @param string $object
-	 * @param string $property
-	 * @param string $rules
-	 * @param boolean $allowed
-	 * @return boolean
-	 */
+/**
+ * Used primary for the admin menu, to see if Controller ($object) and Action ($property)
+ * is present in a comma-separated list - with support for wildcards
+ *
+ * @param string $object
+ * @param string $property
+ * @param string $rules
+ * @param boolean $allowed
+ * @return boolean
+ */
 	public static function requestAllowed($object, $property, $rules, $allowed = false) {
 		preg_match_all('/\s?(!?[^:,]+):([^,:]+)/is', $rules, $matches, PREG_SET_ORDER);
 		foreach ($matches as $match) {
@@ -117,23 +117,23 @@ class Common {
 		return $allowed;
 	}
 
-	/**
-	* Remove app absolute paths and strip them down to constant strings
-	*
-	* Its used to avoid information leak about the platform and hosting envoriment
-	*
-	* The following constants will be replaced with stringified version
-	* - WWW_ROOT
-	* - CAKE
-	* - APP
-	* - ROOT
-	* - WEBROOT_DIR
-	*
-	* @platform
-	* @param string $str
-	* @param
-	* @return string
-	*/
+/**
+ * Remove app absolute paths and strip them down to constant strings
+ *
+ * Its used to avoid information leak about the platform and hosting envoriment
+ *
+ * The following constants will be replaced with stringified version
+ * - WWW_ROOT
+ * - CAKE
+ * - APP
+ * - ROOT
+ * - WEBROOT_DIR
+ *
+ * @platform
+ * @param string $str
+ * @param
+ * @return string
+ */
 	public static function stripRealPaths($str) {
 		$str = str_replace(WWW_ROOT, 'WWW_ROOT/', $str);
 		$str = str_replace(CAKE, 'CAKE/', $str);
@@ -144,14 +144,14 @@ class Common {
 		return $str;
 	}
 
-	/**
-	 * Check if a string can be evaluated to boolean
-	 *
-	 * @param mixed $str
-	 * @param array $additionalTrueValues List of additional values that should evaluate to true
-	 * @param boolean $default Default boolean return value
-	 * @return boolean TRUE if the $str exists in $trueList
-	 */
+/**
+ * Check if a string can be evaluated to boolean
+ *
+ * @param mixed $str
+ * @param array $additionalTrueValues List of additional values that should evaluate to true
+ * @param boolean $default Default boolean return value
+ * @return boolean TRUE if the $str exists in $trueList
+ */
 	public static function evaluateBoolean($str, $additionalTrueValues = array(), $default = false) {
 		$trueList = array(true, 1, '1', 'y', 'yes', 'true', 'ja', 'on');
 
@@ -169,15 +169,15 @@ class Common {
 		return $default;
 	}
 
-	/**
-	 * Clean a string so its suitable for slugs / URLs in the browser
-	 *
-	 * Removes special chars and maps high-level utf8 chars to their more simple
-	 * version - like the danish 'å' to 'aa'
-	 *
-	 * @param string $url
-	 * @return string
-	 */
+/**
+ * Clean a string so its suitable for slugs / URLs in the browser
+ *
+ * Removes special chars and maps high-level utf8 chars to their more simple
+ * version - like the danish 'å' to 'aa'
+ *
+ * @param string $url
+ * @return string
+ */
 	public static function cleanUrl($url) {
 		if ('' == $url) {
 			return $url;
@@ -196,7 +196,7 @@ class Common {
 			$url = str_replace(utf8_encode($b), urlencode(utf8_encode($b)), $url);
 		}
 
-		$url = self::remove_accents($url);
+		$url = self::_removeAccents($url);
 		$url = preg_replace('|[^%a-z0-9-~+_;,/\(\)]|iu', '-', $url);
 		$url = str_replace(';//', '://', $url);
 		$url = preg_replace('#[-]{2,}#', '-', $url);
@@ -205,36 +205,36 @@ class Common {
 		return $url;
 	}
 
-	/**
-	* Clean a filename.
-	* Replaces æøå (Danish chars) to ae, oe and aa
-	* @param string $filename
-	*
-	* @return string
-	*/
+/**
+ * Clean a filename.
+ * Replaces æøå (Danish chars) to ae, oe and aa
+ * @param string $filename
+ *
+ * @return string
+ */
 	public static function cleanFilename($filename) {
 		$replacement = array(',' => '-', 'æ' => 'ae', 'ø' => 'oe', 'å' => 'aa', 'Æ' => 'AE', 'ø' => 'OE', 'Å' => 'AA', '?' => '-');
 		return str_replace(array_keys($replacement), array_values($replacement), $filename);
 	}
 
-	/**
-	 * array arrayDeepMerge ( array array1 [, array array2 [, array ...]] )
-	 *
-	 * Like array_merge
-	 *
-	 *	arrayDeepMerge() merges the elements of one or more arrays together so
-	 * that the values of one are appended to the end of the previous one. It
-	 * returns the resulting array.
-	 *	If the input arrays have the same string keys, then the later value for
-	 * that key will overwrite the previous one. If, however, the arrays contain
-	 * numeric keys, the later value will not overwrite the original value, but
-	 * will be appended.
-	 *	If only one array is given and the array is numerically indexed, the keys
-	 * get reindexed in a continuous way.
-	 *
-	 * Different from array_merge
-	 *	If string keys have arrays for values, these arrays will merge recursively.
-	 */
+/**
+ * array arrayDeepMerge ( array array1 [, array array2 [, array ...]] )
+ *
+ * Like array_merge
+ *
+ *	arrayDeepMerge() merges the elements of one or more arrays together so
+ * that the values of one are appended to the end of the previous one. It
+ * returns the resulting array.
+ *	If the input arrays have the same string keys, then the later value for
+ * that key will overwrite the previous one. If, however, the arrays contain
+ * numeric keys, the later value will not overwrite the original value, but
+ * will be appended.
+ *	If only one array is given and the array is numerically indexed, the keys
+ * get reindexed in a continuous way.
+ *
+ * Different from array_merge
+ *	If string keys have arrays for values, these arrays will merge recursively.
+ */
 	public static function arrayDeepMerge() {
 		switch (func_num_args()) {
 			case 0 :
@@ -250,23 +250,22 @@ class Common {
 						$isKey1 = array_key_exists($key, $newArrayKeyrgs[1]);
 						if ($isKey0 && $isKey1 && is_array($newArrayKeyrgs[0][$key]) && is_array($newArrayKeyrgs[1][$key])) {
 							$newArrayKeyrgs[2][$key] = self::arrayDeepMerge($newArrayKeyrgs[0][$key], $newArrayKeyrgs[1][$key]);
-						}
-						else
+						} else {
 							if ($isKey0 && $isKey1) {
 								$newArrayKeyrgs[2][$key] = $newArrayKeyrgs[1][$key];
-							}
-							else
+							} else {
 								if (!$isKey1) {
 									$newArrayKeyrgs[2][$key] = $newArrayKeyrgs[0][$key];
-								}
-								else
+								} else {
 									if (!$isKey0) {
 										$newArrayKeyrgs[2][$key] = $newArrayKeyrgs[1][$key];
 									}
+								}
+							}
+						}
 					}
 					return $newArrayKeyrgs[2];
-				}
-				else {
+				} else {
 					return $newArrayKeyrgs[1];
 				}
 			default :
@@ -278,45 +277,49 @@ class Common {
 		}
 	}
 
-	/**
-	 * Check if a string looks like an UTF8 string
-	 *
-	 * @param string $str
-	 * @return boolean true if the string is in utf8 encoding
-	 */
+/**
+ * Check if a string looks like an UTF8 string
+ *
+ * @param string $str
+ * @return boolean true if the string is in utf8 encoding
+ */
 	public static function seemsUtf8($Str) { # by bmorel at ssi dot fr
-		for($i = 0; $i < strlen($Str); $i++) {
-			if (ord($Str[$i]) < 0x80)
+		$length = strlen($Str);
+		for ($i = 0; $i < $length; $i++) {
+			if (ord($Str[$i]) < 0x80) {
 				continue;
-			elseif ((ord($Str[$i]) & 0xE0) == 0xC0)
+			} elseif ((ord($Str[$i]) & 0xE0) == 0xC0) {
 				$n = 1;
-			elseif ((ord($Str[$i]) & 0xF0) == 0xE0)
+			} elseif ((ord($Str[$i]) & 0xF0) == 0xE0) {
 				$n = 2;
-			elseif ((ord($Str[$i]) & 0xF8) == 0xF0)
+			} elseif ((ord($Str[$i]) & 0xF8) == 0xF0) {
 				$n = 3;
-			elseif ((ord($Str[$i]) & 0xFC) == 0xF8)
+			} elseif ((ord($Str[$i]) & 0xFC) == 0xF8) {
 				$n = 4;
-			elseif ((ord($Str[$i]) & 0xFE) == 0xFC)
+			} elseif ((ord($Str[$i]) & 0xFE) == 0xFC) {
 				$n = 5;
-			else
+			} else {
 				return false;
-			for($j = 0; $j < $n; $j++) { # n bytes matching 10bbbbbb follow ?
-				if ((++ $i == strlen($Str)) || ((ord($Str[$i]) & 0xC0) != 0x80))
+			}
+			for ($j = 0; $j < $n; $j++) {
+				# n bytes matching 10bbbbbb follow ?
+				if ((++ $i == strlen($Str)) || ((ord($Str[$i]) & 0xC0) != 0x80)) {
 					return false;
+				}
 			}
 		}
 		return true;
 	}
 
-	/**
-	 * Helper method for \cleanUrl method
-	 *
-	 * Maps all high-level utf8 chars to their simple ASCII part
-	 *
-	 * @param string $string
-	 * @return string
-	 */
-	protected static function remove_accents($string) {
+/**
+ * Helper method for \cleanUrl method
+ *
+ * Maps all high-level utf8 chars to their simple ASCII part
+ *
+ * @param string $string
+ * @return string
+ */
+	protected static function _removeAccents($string) {
 		if (!preg_match('/[\x80-\xff]/', $string))
 			return $string;
 
@@ -511,8 +514,7 @@ class Common {
 				chr(226) . chr(130) . chr(172) => 'E');
 
 			$string = strtr($string, $chars);
-		}
-		else {
+		} else {
 			// Assume ISO-8859-1 if not UTF-8
 			$chars['in'] = chr(128) . chr(131) . chr(138) . chr(142) . chr(154) . chr(158) . chr(159) . chr(162) . chr(165) . chr(181) . chr(192) . chr(193) . chr(194) . chr(195) . chr(196) . chr(197) . chr(199) . chr(200) . chr(201) . chr(202) . chr(203) . chr(204) . chr(205) . chr(206) . chr(207) . chr(209) . chr(210) . chr(211) . chr(212) . chr(213) . chr(214) . chr(216) . chr(217) . chr(218) . chr(219) . chr(220) . chr(221) . chr(224) . chr(225) . chr(226) . chr(227) . chr(228) . chr(229) . chr(231) . chr(232) . chr(233) . chr(234) . chr(235) . chr(236) . chr(237) . chr(238) . chr(239) . chr(241) . chr(242) . chr(243) . chr(244) . chr(245) . chr(246) . chr(248) . chr(249) . chr(250) . chr(251) . chr(252) . chr(253) . chr(255);
 

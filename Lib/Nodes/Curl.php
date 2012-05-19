@@ -12,19 +12,20 @@ namespace Nodes;
 * @copyright Nodes ApS 2010-2012 <tech@nodes.dk>
 */
 class Curl {
-	/**
-	* The cURL resource created by curl_init
-	*
-	* @var resource
-	*/
-	protected $curlResource;
 
-	/**
-	* The default cURL options
-	*
-	* @var array
-	*/
-	protected $defaultCurlOptions = array(
+/**
+ * The cURL resource created by curl_init
+ *
+ * @var resource
+ */
+	protected $_curlResource;
+
+/**
+ * The default cURL options
+ *
+ * @var array
+ */
+	protected $_default_curlOptions = array(
 		CURLOPT_RETURNTRANSFER	=> true, // Always return the HTTP body
 		CURLOPT_CONNECTTIMEOUT	=> 2,	 // If we can't connect for 2 seconds, abort
 		CURLOPT_TIMEOUT			=> 10,	 // Our request should be able to complete within 10 seconds
@@ -32,108 +33,109 @@ class Curl {
 		CURLOPT_MAXREDIRS		=> 10,	 // The maximum amount of HTTP redirections to follow.
 	);
 
-	/**
-	* The current curl options
-	*
-	* @var array
-	*/
-	protected $curlOptions = array();
+/**
+ * The current curl options
+ *
+ * @var array
+ */
+	protected $_curlOptions = array();
 
-	/**
-	* The response body from an executed HTTP request
-	*
-	* @var string
-	*/
-	protected $responseBody;
+/**
+ * The response body from an executed HTTP request
+ *
+ * @var string
+ */
+	protected $_responseBody;
 
-	/**
-	* Array with response headers with all header keys lowered
-	*
-	* @var array
-	*/
-	protected $responseHeadersArray = array();
+/**
+ * Array with response headers with all header keys lowered
+ *
+ * @var array
+ */
+	protected $_responseHeadersArray = array();
 
-	/**
-	* Array with response headers (Raw)
-	*
-	* @var array
-	*/
-	protected $responseHeadersArrayRaw = array();
+/**
+ * Array with response headers (Raw)
+ *
+ * @var array
+ */
+	protected $_responseHeadersArrayRaw = array();
 
-	/**
-	* The last cURL error
-	*
-	* @var string
-	*/
-	protected $curlError;
+/**
+ * The last cURL error
+ *
+ * @var string
+ */
+	protected $_curlError;
 
-	/**
-	* Constructor
-	*
-	* @param string $url		The URL to query
-	* @param array $options		cURL options
-	*/
+/**
+ * Constructor
+ *
+ * @param string $url		The URL to query
+ * @param array $options		cURL options
+ */
 	public function __construct($url = null, $options = array()) {
 		// Merge all options
-		$this->curlOptions = $this->defaultCurlOptions + $options + array(CURLOPT_URL => $url);
+		$this->_curlOptions = $this->_default_curlOptions + $options + array(CURLOPT_URL => $url);
 	}
 
-	/**
-	* Execute a HTTP GET request
-	*
-	* @return mixed
-	*/
+/**
+ * Execute a HTTP GET request
+ *
+ * @return mixed
+ */
 	public function get() {
-		$this->curlOptions = $this->curlOptions + array(CURLOPT_CUSTOMREQUEST => 'GET');
+		$this->_curlOptions = $this->_curlOptions + array(CURLOPT_CUSTOMREQUEST => 'GET');
 		return $this->exec();
 	}
 
-	/**
-	* Execute a HTTP POST request
-	*
-	* @param array $data POST data
-	* @return mixed
-	*/
+/**
+ * Execute a HTTP POST request
+ *
+ * @param array $data POST data
+ * @return mixed
+ */
 	public function post($data) {
-		return $this->exec($this->curlOptions + array(CURLOPT_CUSTOMREQUEST => 'POST', CURLOPT_POSTFIELDS => http_build_query($data)));
+		return $this->exec($this->_curlOptions + array(CURLOPT_CUSTOMREQUEST => 'POST', CURLOPT_POSTFIELDS => http_build_query($data)));
 	}
 
-	/**
-	* Execute a HTTP PUT request
-	*
-	* @param array $data POST data
-	* @return mixed
-	*/
+/**
+ * Execute a HTTP PUT request
+ *
+ * @param array $data POST data
+ * @return mixed
+ */
 	public function put($data) {
-		return $this->exec($this->curlOptions + array(CURLOPT_CUSTOMREQUEST => 'PUT', CURLOPT_POSTFIELDS => http_build_query($data)));
+		return $this->exec($this->_curlOptions + array(CURLOPT_CUSTOMREQUEST => 'PUT', CURLOPT_POSTFIELDS => http_build_query($data)));
 	}
 
-	/**
-	* Execute a HTTP DELETE request
-	*
-	* @return mixed
-	*/
+/**
+ * Execute a HTTP DELETE request
+ *
+ * @return mixed
+ */
 	public function delete() {
-		return $this->exec($this->curlOptions + array(CURLOPT_CUSTOMREQUEST => 'DELETE'));
+		return $this->exec($this->_curlOptions + array(CURLOPT_CUSTOMREQUEST => 'DELETE'));
 	}
 
-	/**
-	* Execute a cURL request
-	*
-	* Throws an CurlException on any cURL errors
-	*
-	* @param array $options
-	* @return mixed
-	*/
+/**
+ * Execute a cURL request
+ *
+ * Throws an CurlException on any cURL errors
+ *
+ * @throws \Curl\Exception
+ * @param array $options
+ * @return mixed
+ */
 	public function exec($options = array()) {
-		$options = $this->curlOptions + $options + array(CURLOPT_HEADERFUNCTION => array($this, 'curlHeaderCallback'));
+		$options = $this->_curlOptions + $options + array(CURLOPT_HEADERFUNCTION => array($this, 'curlHeaderCallback'));
 
-		// Make sure to cleanup previous used curlResource
+		// Make sure to cleanup previous used _curlResource
 		$this->cleanup();
 
-		$this->curlResource = curl_init();
-		curl_setopt_array($this->curlResource, $options);
-		$this->responseBody = curl_exec($this->curlResource);
+		$this->_curlResource = curl_init();
+		curl_setopt_array($this->_curlResource, $options);
+		$this->_responseBody = curl_exec($this->_curlResource);
 
 		if ($this->hasError()) {
 			throw new Curl\Exception($this->getError());
@@ -143,58 +145,58 @@ class Curl {
 	}
 
 	public function cleanup() {
-		if (empty($this->curlResource)) {
+		if (empty($this->_curlResource)) {
 			return;
 		}
 
-		curl_close($this->curlResource);
-		$this->curlResource = null;
-		unset($this->curlResource);
+		curl_close($this->_curlResource);
+		$this->_curlResource = null;
+		unset($this->_curlResource);
 	}
 
-	/**
-	* Parse headers from the current cURL request
-	*
-	* @param object $resURL
-	* @param string $strHeader	The raw HTTP header
-	* @return integer
-	*/
+/**
+ * Parse headers from the current cURL request
+ *
+ * @param object $resURL
+ * @param string $strHeader	The raw HTTP header
+ * @return integer
+ */
 	public function curlHeaderCallback($resURL, $header) {
 		if (false !== strstr($header, ':')) {
 			list($key, $value) = explode(':', $header);
 
-			$this->responseHeadersArray[strtolower($key)] = trim($value);
-			$this->responseHeadersArrayRaw[$key] = trim($value);
+			$this->_responseHeadersArray[strtolower($key)] = trim($value);
+			$this->_responseHeadersArrayRaw[$key] = trim($value);
 		}
 
 		return strlen($header);
 	}
 
-	/**
-	* Get the response content type
-	*
-	* @return string
-	*/
+/**
+ * Get the response content type
+ *
+ * @return string
+ */
 	public function getResponseType() {
-		return curl_getinfo($this->curlResource, CURLINFO_CONTENT_TYPE);
+		return curl_getinfo($this->_curlResource, CURLINFO_CONTENT_TYPE);
 	}
 
-	/**
-	* Get the response code
-	*
-	* @return integer
-	*/
+/**
+ * Get the response code
+ *
+ * @return integer
+ */
 	public function getResponseCode() {
-		return curl_getinfo($this->curlResource, CURLINFO_HTTP_CODE);
+		return curl_getinfo($this->_curlResource, CURLINFO_HTTP_CODE);
 	}
 
-	/**
-	* Get a specific response header by key
-	*
-	* @param string $key 	The HTTP header name
-	* @param boolean $raw 	Should we check the raw response (key has to match in case)
-	* @return mixed
-	*/
+/**
+ * Get a specific response header by key
+ *
+ * @param string $key 	The HTTP header name
+ * @param boolean $raw 	Should we check the raw response (key has to match in case)
+ * @return mixed
+ */
 	public function getResponseHeader($key, $raw = false) {
 		$headers = $this->getResponseHeaders($raw);
 
@@ -206,37 +208,37 @@ class Curl {
 		return $value;
 	}
 
-	/**
-	* Get the array with all HTTP response headers
-	*
-	* @param boolean $raw Should we return the raw response (key has not been normalized)
-	* @return array
-	*/
+/**
+ * Get the array with all HTTP response headers
+ *
+ * @param boolean $raw Should we return the raw response (key has not been normalized)
+ * @return array
+ */
 	public function getResponseHeaders($raw = false) {
 		if ($raw) {
-			$this->responseHeadersArrayRaw;
+			$this->_responseHeadersArrayRaw;
 		}
-		return $this->responseHeadersArray;
+		return $this->_responseHeadersArray;
 	}
 
-	/**
-	* Get the HTTP response body from the server
-	*
-	* Will try to decode data based on response content type unless raw is true
-	*
-	* @param boolean $raw	Return the RAW response body
-	* @return mixed
-	*/
-	public function getResponseBody($raw = false) {
+/**
+ * Get the HTTP response body from the server
+ *
+ * Will try to decode data based on response content type unless raw is true
+ *
+ * @param boolean $raw	Return the RAW response body
+ * @return mixed
+ */
+	public function get_responseBody($raw = false) {
 		if ($raw) {
-			return $this->responseBody;
+			return $this->_responseBody;
 		}
 
 		$type = $this->getResponseType();
 
 		// Handle responses like: text/javascript; charset=UTF-8
 		if (false !== strpos($type, ';')) {
-			list($type, $encoding) = split(';', $type);
+			list($type, $encoding) = explode(';', $type);
 		}
 
 		switch($type) {
@@ -244,50 +246,50 @@ class Curl {
 			case 'text/javascript':
 			case 'application/json':
 			case 'json':
-				return json_decode($this->responseBody, true);
+				return json_decode($this->_responseBody, true);
 			default:
-				return $this->responseBody;
+				return $this->_responseBody;
 		}
 	}
 
-	/**
-	* Check if the cURL object has any errors
-	*
-	* @return boolean
-	*/
+/**
+ * Check if the cURL object has any errors
+ *
+ * @return boolean
+ */
 	public function hasError() {
 		return '' !== $this->getError();
 	}
 
-	/**
-	* Get the last cURL error
-	*
-	* @return string
-	*/
+/**
+ * Get the last cURL error
+ *
+ * @return string
+ */
 	public function getError() {
-		return curl_error($this->curlResource);
+		return curl_error($this->_curlResource);
 	}
 
-	/**
-	* Set option for the cURL resource
-	*
-	* If key is an array, its expected to be a key => value pair and will be merged with curlOptions
-	*
-	* @param string|array	$key
-	* @param string			$value
-	* @return \Nodes\Curl
-	*/
+/**
+ * Set option for the cURL resource
+ *
+ * If key is an array, its expected to be a key => value pair and will be merged with _curlOptions
+ *
+ * @param string|array	$key
+ * @param string			$value
+ * @return \Nodes\Curl
+ */
 	public function setOption($key, $value = null) {
 		if (is_array($key)) {
-			$this->curlOptions = $this->curlOptions + $key;
+			$this->_curlOptions = $this->_curlOptions + $key;
 			return;
 		}
-		$this->curlOptions[$key] = $value;
+		$this->_curlOptions[$key] = $value;
 		return $this;
 	}
 
 	public function __clone() {
-		$instance = new $this(null, $this->curlOptions);
+		$instance = new $this(null, $this->_curlOptions);
 		return $instance;
 	}
 }
