@@ -11,22 +11,23 @@ namespace Nodes;
  * @since 14.02.2011
  */
 class Autoload {
-	/**
-	 * List of search paths
-	 *
-	 * @var array
-	 */
-	protected static $paths = array();
 
-	/**
-	 * Search for a class
-	 *
-	 * This is the actual callback defined in spl_autoload_register
-	 *
-	 * @see http://php.net/spl_autoload_register
-	 * @param string $class PHP Class name to map to PHP file
-	 * @return boolean
-	 */
+/**
+ * List of search paths
+ *
+ * @var array
+ */
+	protected static $_paths = array();
+
+/**
+ * Search for a class
+ *
+ * This is the actual callback defined in spl_autoload_register
+ *
+ * @see http://php.net/spl_autoload_register
+ * @param string $class PHP Class name to map to PHP file
+ * @return boolean
+ */
 	public static function load($class) {
 		// Only load namespaced classes and classes with two underscores (Zend_* and friends)
 		if (false === strstr($class, '\\') && substr_count($class, '_') < 2) {
@@ -34,19 +35,19 @@ class Autoload {
 		}
 
 		// Scan the filesystem for the php file
-		$path = static::path($class);
+		$path = static::_path($class);
 
 		// If we found the file, require it
 		return $path && require_once $path;
 	}
 
-	/**
-	 * Search for a php file mapping to the class name
-	 *
-	 * @param string $class
-	 * @return boolean
-	 */
-	protected static function path($className) {
+/**
+ * Search for a php file mapping to the class name
+ *
+ * @param string $class
+ * @return boolean
+ */
+	protected static function _path($className) {
 		// Check if class looks like a Zend_* class nameing
 		if (substr_count($className, '_') > 1) {
 			// Convert underscores to DIRECTORY_SEPARATOR in paths
@@ -77,7 +78,7 @@ class Autoload {
 		$fileName .= str_replace('_', DIRECTORY_SEPARATOR, $className) . '.php';
 
 		// Search each path and check if the file exist
-		foreach (self::$paths as $path) {
+		foreach (self::$_paths as $path) {
 			$fullPath = $path . $fileName;
 			if (file_exists($fullPath)) {
 				return $fullPath;
@@ -87,35 +88,35 @@ class Autoload {
 		return false;
 	}
 
-	/**
-	 * Add a new search path
-	 *
-	 * If $path is an array, addPath will be called for each value
-	 *
-	 * @param string|array $path Path to a folder
-	 * @return void
-	 */
+/**
+ * Add a new search path
+ *
+ * If $path is an array, addPath will be called for each value
+ *
+ * @param string|array $path Path to a folder
+ * @return void
+ */
 	public static function addPath($path) {
 		if (is_array($path)) {
 			return array_map(array('static', 'addPath'), $path);
 		}
-		static::$paths[] = $path;
+		static::$_paths[] = $path;
 	}
 
-	/**
-	 * Register \nodes\Autoload with spl_autoload
-	 *
-	 * @return boolean
-	 */
+/**
+ * Register \nodes\Autoload with spl_autoload
+ *
+ * @return boolean
+ */
 	public static function register() {
 		return spl_autoload_register(array('static', 'load'), true);
 	}
 
-	/**
-	 * Unregister \nodes\Autoload from spl_autoload
-	 *
-	 * @return boolean
-	 */
+/**
+ * Unregister \nodes\Autoload from spl_autoload
+ *
+ * @return boolean
+ */
 	public static function unregister() {
 		return spl_autoload_unregister(array('static', 'load'));
 	}
