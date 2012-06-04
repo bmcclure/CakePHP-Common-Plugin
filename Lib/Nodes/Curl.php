@@ -76,7 +76,7 @@ class Curl {
  */
 	public function __construct($url = null, $options = array()) {
 		// Merge all options
-		$this->_curlOptions = $this->defaultCurlOptions + $options;
+		$this->_curlOptions = $this->_defaultCurlOptions + $options;
 
 		if (!empty($url)) {
 			$this->_curlOptions += array(CURLOPT_URL => $url);
