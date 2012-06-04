@@ -2,17 +2,16 @@
 namespace Nodes;
 
 /**
-* cURL class helper
-*
-* Please make sure to always use CURLOPT_* constants and not the string versions
-* The class will throw exceptions on errors, so remember to catch them
-*
-* @platform
-* @package Core.Lib
-* @copyright Nodes ApS 2010-2012 <tech@nodes.dk>
-*/
+ * cURL class helper
+ *
+ * Please make sure to always use CURLOPT_* constants and not the string versions
+ * The class will throw exceptions on errors, so remember to catch them
+ *
+ * @platform
+ * @package Core.Lib
+ * @copyright Nodes ApS 2010-2012 <tech@nodes.dk>
+ */
 class Curl {
-
 /**
  * The cURL resource created by curl_init
  *
@@ -26,6 +25,7 @@ class Curl {
  * @var array
  */
 	protected $_defaultCurlOptions = array(
+		CURLOPT_CUSTOMREQUEST	=> 'GET',
 		CURLOPT_RETURNTRANSFER	=> true, // Always return the HTTP body
 		CURLOPT_CONNECTTIMEOUT	=> 2,	 // If we can't connect for 2 seconds, abort
 		CURLOPT_TIMEOUT			=> 10,	 // Our request should be able to complete within 10 seconds
@@ -72,11 +72,15 @@ class Curl {
  * Constructor
  *
  * @param string $url		The URL to query
- * @param array $options		cURL options
+ * @param array $options	cURL options
  */
 	public function __construct($url = null, $options = array()) {
 		// Merge all options
-		$this->_curlOptions = $this->_defaultCurlOptions + $options + array(CURLOPT_URL => $url);
+		$this->_curlOptions = $this->_defaultCurlOptions + $options;
+
+		if (!empty($url)) {
+			$this->_curlOptions += array(CURLOPT_URL => $url);
+		}
 	}
 
 /**
@@ -85,7 +89,7 @@ class Curl {
  * @return mixed
  */
 	public function get() {
-		$this->_curlOptions = $this->_curlOptions + array(CURLOPT_CUSTOMREQUEST => 'GET');
+		$this->_curlOptions += array(CURLOPT_CUSTOMREQUEST => 'GET');
 		return $this->exec();
 	}
 
@@ -95,8 +99,11 @@ class Curl {
  * @param array $data POST data
  * @return mixed
  */
-	public function post($data) {
-		return $this->exec($this->_curlOptions + array(CURLOPT_CUSTOMREQUEST => 'POST', CURLOPT_POSTFIELDS => http_build_query($data)));
+	public function post($data = array()) {
+		if (!empty($data)) {
+			$this->_curlOptions += array(CURLOPT_POSTFIELDS => http_build_query($data));
+		}
+		return $this->exec($this->_curlOptions + array(CURLOPT_CUSTOMREQUEST => 'POST'));
 	}
 
 /**
@@ -105,8 +112,11 @@ class Curl {
  * @param array $data POST data
  * @return mixed
  */
-	public function put($data) {
-		return $this->exec($this->_curlOptions + array(CURLOPT_CUSTOMREQUEST => 'PUT', CURLOPT_POSTFIELDS => http_build_query($data)));
+	public function put($data = array()) {
+		if (!empty($data)) {
+			$this->_curlOptions += array(CURLOPT_POSTFIELDS => http_build_query($data));
+		}
+		return $this->exec($this->_curlOptions + array(CURLOPT_CUSTOMREQUEST => 'PUT'));
 	}
 
 /**
@@ -115,7 +125,44 @@ class Curl {
  * @return mixed
  */
 	public function delete() {
-		return $this->exec($this->_curlOptions + array(CURLOPT_CUSTOMREQUEST => 'DELETE'));
+		$this->_curlOptions += array(CURLOPT_CUSTOMREQUEST => 'DELETE');
+		return $this->exec();
+	}
+
+/**
+ * Create a cURL resource based on some options
+ *
+ * @param array $options
+ * @return \Nodes\Curl
+ */
+	public function createCurlResource($options = array()) {
+		$this->cleanup();
+
+		$this->_curlResource = curl_init();
+		$this->_curlOptions	+= $options + array(CURLOPT_HEADERFUNCTION => array($this, 'curlHeaderCallback'));
+		curl_setopt_array($this->_curlResource, $this->_curlOptions);
+
+		return $this;
+	}
+
+/**
+ * Replace the current stored cURL resource with a new one
+ *
+ * @param resource $object
+ * @return void
+ */
+	public function setCurlResource($object) {
+		$this->_curlResource = $object;
+		$this->checkError();
+	}
+
+/**
+ * Get the current cURL resource
+ *
+ * @return resource
+ */
+	public function getCurlResource() {
+		return $this->_curlResource;
 	}
 
 /**
@@ -125,10 +172,10 @@ class Curl {
  *
  * @throws \Curl\Exception
  * @param array $options
- * @return mixed
+ * @return \Nodes\Curl
  */
 	public function exec($options = array()) {
-		$options = $this->_curlOptions + $options + array(CURLOPT_HEADERFUNCTION => array($this, 'curlHeaderCallback'));
+		$this->createCurlResource($options);
 
 		// Make sure to cleanup previous used _curlResource
 		$this->cleanup();
@@ -144,14 +191,32 @@ class Curl {
 		return $this;
 	}
 
+/**
+ * Manually overwrite the response body
+ *
+ * @param mixed $body
+ * @return \Nodes\Curl
+ */
+	public function setResponseBody($body) {
+		$this->_responseBody = $body;
+		return $this;
+	}
+
+/**
+ * Reset the curlResource object
+ *
+ * @return \Nodes\Curl
+ */
 	public function cleanup() {
 		if (empty($this->_curlResource)) {
-			return;
+			return $this;
 		}
 
 		curl_close($this->_curlResource);
 		$this->_curlResource = null;
 		unset($this->_curlResource);
+
+		return $this;
 	}
 
 /**
@@ -250,6 +315,21 @@ class Curl {
 			default:
 				return $this->_responseBody;
 		}
+	}
+
+/**
+ * Utility method to check if the current curlResource has error
+ *
+ * Will throw an error if there is any errors
+ *
+ * @return \Nodes\Curl
+ */
+	public function checkError() {
+		if ($this->hasError()) {
+			throw new Curl\Exception($this->getError());
+		}
+
+		return $this;
 	}
 
 /**
