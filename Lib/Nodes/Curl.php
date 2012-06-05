@@ -76,10 +76,10 @@ class Curl {
  */
 	public function __construct($url = null, $options = array()) {
 		// Merge all options
-		$this->_curlOptions = $this->_defaultCurlOptions + $options;
+		$this->_curlOptions = $options + $this->_defaultCurlOptions;
 
 		if (!empty($url)) {
-			$this->_curlOptions += array(CURLOPT_URL => $url);
+			$this->_curlOptions = array(CURLOPT_URL => $url) + $this->_curlOptions;
 		}
 	}
 
@@ -89,7 +89,7 @@ class Curl {
  * @return mixed
  */
 	public function get() {
-		$this->_curlOptions += array(CURLOPT_CUSTOMREQUEST => 'GET');
+		$this->_curlOptions = array(CURLOPT_CUSTOMREQUEST => 'GET') + $this->_curlOptions;
 		return $this->exec();
 	}
 
@@ -101,9 +101,11 @@ class Curl {
  */
 	public function post($data = array()) {
 		if (!empty($data)) {
-			$this->_curlOptions += array(CURLOPT_POSTFIELDS => http_build_query($data));
+			$this->_curlOptions = array(CURLOPT_POSTFIELDS => http_build_query($data)) + $this->_curlOptions;
 		}
-		return $this->exec($this->_curlOptions + array(CURLOPT_CUSTOMREQUEST => 'POST'));
+
+		$this->_curlOptions = array(CURLOPT_CUSTOMREQUEST => 'POST') + $this->_curlOptions;
+		return $this->exec($this->_curlOptions);
 	}
 
 /**
@@ -114,9 +116,11 @@ class Curl {
  */
 	public function put($data = array()) {
 		if (!empty($data)) {
-			$this->_curlOptions += array(CURLOPT_POSTFIELDS => http_build_query($data));
+			$this->_curlOptions = array(CURLOPT_POSTFIELDS => http_build_query($data)) + $this->_curlOptions;
 		}
-		return $this->exec($this->_curlOptions + array(CURLOPT_CUSTOMREQUEST => 'PUT'));
+
+		$this->_curlOptions = array(CURLOPT_CUSTOMREQUEST => 'PUT') + $this->_curlOptions;
+		return $this->exec($this->_curlOptions);
 	}
 
 /**
@@ -125,7 +129,7 @@ class Curl {
  * @return mixed
  */
 	public function delete() {
-		$this->_curlOptions += array(CURLOPT_CUSTOMREQUEST => 'DELETE');
+		$this->_curlOptions = array(CURLOPT_CUSTOMREQUEST => 'DELETE') + $this->_curlOptions;
 		return $this->exec();
 	}
 
@@ -133,13 +137,14 @@ class Curl {
  * Create a cURL resource based on some options
  *
  * @param array $options
- * @return \Nodes\Curl
+ * @return Curl
  */
 	public function createCurlResource($options = array()) {
 		$this->cleanup();
 
 		$this->_curlResource = curl_init();
-		$this->_curlOptions	+= $options + array(CURLOPT_HEADERFUNCTION => array($this, 'curlHeaderCallback'));
+		$this->_curlOptions = array(CURLOPT_HEADERFUNCTION => array($this, 'curlHeaderCallback')) + $this->_curlOptions;
+
 		curl_setopt_array($this->_curlResource, $this->_curlOptions);
 
 		return $this;
@@ -170,24 +175,14 @@ class Curl {
  *
  * Throws an CurlException on any cURL errors
  *
- * @throws \Curl\Exception
+ * @throws Curl\Exception
  * @param array $options
- * @return \Nodes\Curl
+ * @return Curl
  */
 	public function exec($options = array()) {
 		$this->createCurlResource($options);
-
-		// Make sure to cleanup previous used _curlResource
-		$this->cleanup();
-
-		$this->_curlResource = curl_init();
-		curl_setopt_array($this->_curlResource, $options);
 		$this->_responseBody = curl_exec($this->_curlResource);
-
-		if ($this->hasError()) {
-			throw new \Curl\Exception($this->getError());
-		}
-
+		$this->checkError();
 		return $this;
 	}
 
@@ -195,7 +190,7 @@ class Curl {
  * Manually overwrite the response body
  *
  * @param mixed $body
- * @return \Nodes\Curl
+ * @return Curl
  */
 	public function setResponseBody($body) {
 		$this->_responseBody = $body;
@@ -205,7 +200,7 @@ class Curl {
 /**
  * Reset the curlResource object
  *
- * @return \Nodes\Curl
+ * @return Curl
  */
 	public function cleanup() {
 		if (empty($this->_curlResource)) {
@@ -322,7 +317,7 @@ class Curl {
  *
  * Will throw an error if there is any errors
  *
- * @return \Nodes\Curl
+ * @return Curl
  */
 	public function checkError() {
 		if ($this->hasError()) {
@@ -357,7 +352,7 @@ class Curl {
  *
  * @param string|array	$key
  * @param string			$value
- * @return \Nodes\Curl
+ * @return Curl
  */
 	public function setOption($key, $value = null) {
 		if (is_array($key)) {
