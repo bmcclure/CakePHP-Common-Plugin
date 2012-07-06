@@ -34,7 +34,7 @@ class SymlinkAssetsShell extends AppShell {
 				if (is_link($config['public'])) {
 					$symlinkTarget = readlink($config['public']);
 					$this->out('----> Path is already symlink. (' . $symlinkTarget . ')');
-					if ($config['relative_private'] === $symlinkTarget) {
+					if (realpath($config['relative_private']) === realpath($symlinkTarget)) {
 						$this->out('----> <info>Skipping</info>, Already configured correctly');
 						continue;
 					}
